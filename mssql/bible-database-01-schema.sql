@@ -2,7 +2,7 @@
 * Bible Database: SQL Server
 * bible-database-01-schema.sql
 *
-* Version: 2024.7.9
+* Version: 2024.7.11
 * 
 * License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 *
@@ -69,6 +69,7 @@ CREATE TABLE [dbo].[Books](
 	[Code] [varchar](4) NOT NULL,
 	[Abbrev] [varchar](4) NOT NULL,
 	[Name] [nvarchar](64) NOT NULL,
+	[Book] [tinyint] NOT NULL,
 	[CanonId] [int] NOT NULL, -- denormalized
 	[SectionId] [int] NOT NULL,
 	[IsSectionEnd] bit NOT NULL,
@@ -97,7 +98,7 @@ GO
 CREATE TABLE [dbo].[Chapters](
 	[Id] [int] NOT NULL,
 	[Code] [varchar](7) NOT NULL,
-	[Chapter] [int] NOT NULL,
+	[Chapter] [tinyint] NOT NULL,
 	[BookId] [int] NOT NULL,
 	[IsBookEnd] bit NOT NULL,
 	[VerseCount] [int] NOT NULL,
@@ -124,9 +125,10 @@ CREATE TABLE [dbo].[Verses](
 	[SectionId] [int] NOT NULL, --denormalized
 	[BookId] [int] NOT NULL, --denormalized
 	[ChapterId] [int] NOT NULL,
-	[Chapter] [int] NOT NULL, --denormalized
 	[IsChapterEnd] bit NOT NULL,
-	[Verse] [int] NOT NULL,
+	[Book] [tinyint] NOT NULL, --denormalized
+	[Chapter] [tinyint] NOT NULL, --denormalized
+	[Verse] [tinyint] NOT NULL,
  CONSTRAINT [PK_Verses] PRIMARY KEY CLUSTERED ([Id] ASC)
 )
 GO
@@ -233,7 +235,7 @@ GO
 CREATE TABLE [dbo].[Versions](
 	[Id] [varchar](8) NOT NULL,
 	[Name] [nvarchar](64) NOT NULL,
-	[Subtitle] [nvarchar](128) NOT NULL,
+	[Subtitle] [nvarchar](128) NULL,
 	[LanguageId] [varchar](3) NOT NULL,
 	[YearPublished] [smallint] NOT NULL,
 	[BibleUrl] [varchar](255) NULL,
@@ -241,7 +243,7 @@ CREATE TABLE [dbo].[Versions](
 	[LicenseUrl] [varchar](255) NULL,
 	[HebrewFormId] [varchar](3) NULL,
 	[GreekFormId] [varchar](3) NULL,
-	[ParentId] [varchar](4) NULL,
+	[ParentId] [varchar](8) NULL,
 	[LicenseTypeId] [int] NULL,
 	[ReadingLevel] [decimal](4, 2) NULL,
  CONSTRAINT [PK_Versions] PRIMARY KEY CLUSTERED ([Id] ASC)
@@ -259,7 +261,7 @@ ALTER TABLE [dbo].[Versions]  WITH CHECK ADD  CONSTRAINT [FK_Versions_Versions] 
 REFERENCES [dbo].[Versions] ([Id])
 GO
 
-ALTER TABLE [dbo].[Versions] CHECK CONSTRAINT [FK_Version_Versions]
+ALTER TABLE [dbo].[Versions] CHECK CONSTRAINT [FK_Versions_Versions]
 GO
 
 ALTER TABLE [dbo].[Versions]  WITH CHECK ADD  CONSTRAINT [FK_Version_TextForm_Greek] FOREIGN KEY([GreekFormId])
@@ -277,17 +279,10 @@ ALTER TABLE [dbo].[Versions] CHECK CONSTRAINT [FK_Version_TextForm_Hebrew]
 GO
 
 ALTER TABLE [dbo].[Versions]  WITH CHECK ADD  CONSTRAINT [FK_Versions_LicenseTypes] FOREIGN KEY([LicenseTypeId])
-REFERENCES [dbo].[LicenseType] ([Id])
+REFERENCES [dbo].[LicenseTypes] ([Id])
 GO
 
 ALTER TABLE [dbo].[Versions] CHECK CONSTRAINT [FK_Versions_LicenseTypes]
-GO
-
-ALTER TABLE [dbo].[Versions]  WITH CHECK ADD  CONSTRAINT [FK_Versions_LiteralRankings] FOREIGN KEY([LiteralRankingId])
-REFERENCES [dbo].[LiteralRankings] ([Id])
-GO
-
-ALTER TABLE [dbo].[Versions] CHECK CONSTRAINT [FK_Versions_LiteralRankings]
 GO
 
 ----------------------------------------------------------------------------
@@ -316,6 +311,107 @@ ALTER TABLE [dbo].[VersionVerses]  WITH CHECK ADD  CONSTRAINT [FK_VersionVerses_
 REFERENCES [dbo].[Verses] ([Id])
 GO
 
-ALTER TABLE [dbo].[[VersionVerses]] CHECK CONSTRAINT [FK_VersionVerses_Verses]
+ALTER TABLE [dbo].[VersionVerses] CHECK CONSTRAINT [FK_VersionVerses_Verses]
 GO
 
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_VersionVerses_Version_Verse] ON [dbo].[VersionVerses]
+(
+	[VersionId] ASC,
+	[VerseId] ASC
+)
+GO
+
+
+----------------------------------------------------------------------------
+-- Version Notes
+----------------------------------------------------------------------------
+
+CREATE TABLE [dbo].[VersionNotes](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[VersionId] [varchar](8) NOT NULL,
+	[CanonId] [int] NULL,
+	[BookId] [int] NULL,
+	[ChapterId] [int] NULL,
+	[VerseId] [int] NULL,
+	[Note] [nvarchar](max) NOT NULL,
+	[Ranking] [int] NOT NULL,
+ CONSTRAINT [PK_VersionNotes] PRIMARY KEY CLUSTERED ([Id] ASC)
+)
+GO
+
+ALTER TABLE [dbo].[VersionNotes]  WITH CHECK ADD  CONSTRAINT [FK_VersionNotes_Versions] FOREIGN KEY([VersionId])
+REFERENCES [dbo].[Versions] ([Id])
+GO
+
+ALTER TABLE [dbo].[VersionNotes] CHECK CONSTRAINT [FK_VersionNotes_Versions]
+GO
+
+ALTER TABLE [dbo].[VersionNotes]  WITH CHECK ADD  CONSTRAINT [FK_VersionNotes_Canons] FOREIGN KEY([CanonId])
+REFERENCES [dbo].[Canons] ([Id])
+GO
+
+ALTER TABLE [dbo].[VersionNotes] CHECK CONSTRAINT [FK_VersionNotes_Canons]
+GO
+
+ALTER TABLE [dbo].[VersionNotes]  WITH CHECK ADD  CONSTRAINT [FK_VersionNotes_Books] FOREIGN KEY([BookId])
+REFERENCES [dbo].[Books] ([Id])
+GO
+
+ALTER TABLE [dbo].[VersionNotes] CHECK CONSTRAINT [FK_VersionNotes_Books]
+GO
+
+ALTER TABLE [dbo].[VersionNotes]  WITH CHECK ADD  CONSTRAINT [FK_VersionNotes_Chapters] FOREIGN KEY([ChapterId])
+REFERENCES [dbo].[Chapters] ([Id])
+GO
+
+ALTER TABLE [dbo].[VersionNotes] CHECK CONSTRAINT [FK_VersionNotes_Chapters]
+GO
+
+ALTER TABLE [dbo].[VersionNotes]  WITH CHECK ADD  CONSTRAINT [FK_VersionNotes_Verses] FOREIGN KEY([VerseId])
+REFERENCES [dbo].[Verses] ([Id])
+GO
+
+ALTER TABLE [dbo].[VersionNotes] CHECK CONSTRAINT [FK_VersionNotes_Verses]
+GO
+
+----------------------------------------------------------------------------
+-- Reference Verses
+----------------------------------------------------------------------------
+
+CREATE TABLE [dbo].[ReferenceVerses](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[VerseId] [int] NOT NULL,
+	[ReferenceId] [int] NOT NULL,
+	[EndReferenceId] [int] NULL,
+	[Ranking] [smallint] NOT NULL,
+ CONSTRAINT [PK_ReferenceVerses] PRIMARY KEY CLUSTERED ([Id] ASC)
+)
+GO
+
+ALTER TABLE [dbo].[ReferenceVerses]  WITH CHECK ADD CONSTRAINT [FK_ReferenceVerses_Verse] FOREIGN KEY([VerseId])
+REFERENCES [dbo].[Verses] ([Id])
+GO
+
+ALTER TABLE [dbo].[ReferenceVerses] CHECK CONSTRAINT [FK_ReferenceVerses_Verse]
+GO
+
+ALTER TABLE [dbo].[ReferenceVerses]  WITH CHECK ADD  CONSTRAINT [FK_ReferenceVerses_Reference] FOREIGN KEY([ReferenceId])
+REFERENCES [dbo].[Verses] ([Id])
+GO
+
+ALTER TABLE [dbo].[ReferenceVerses] CHECK CONSTRAINT [FK_ReferenceVerses_Reference]
+GO
+
+ALTER TABLE [dbo].[ReferenceVerses]  WITH CHECK ADD  CONSTRAINT [FK_ReferenceVerses_EndReference] FOREIGN KEY([EndReferenceId])
+REFERENCES [dbo].[Verses] ([Id])
+GO
+
+ALTER TABLE [dbo].[ReferenceVerses] CHECK CONSTRAINT [FK_ReferenceVerses_EndReference]
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_ReferenceVerses_Verses] ON [dbo].[ReferenceVerses]
+(
+	[VerseId] ASC,
+	[ReferenceId] ASC
+)
+GO

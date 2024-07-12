@@ -2,7 +2,7 @@
 * Bible Database: SQL Server
 * bible-database-03-data.sql
 *
-* Version: 2024.7.9
+* Version: 2024.7.11
 * 
 * License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 * 
@@ -15,17 +15,19 @@
 INSERT INTO [dbo].[Versions]([Id], [Name], [SubTitle], [LanguageId], [YearPublished], [LicenseTypeId], [ReadingLevel] ,[HebrewFormId], [GreekFormId], [BibleUrl], [ReadUrl], [LicenseUrl])
      VALUES ('RVA', 'Reina-Valera Antigua', NULL, 'esp', 1569, 1, NULL, 'MAS', 'TRG', NULL, 'https://www.biblegateway.com/versions/Reina-Valera-Antigua-RVA-Biblia/', NULL)
 	, ('RV', 'Reina Valera', NULL, 'esp', 1602, 1, NULL, 'MAS', 'TRG', NULL, NULL, NULL)
-	, ('KJV', 'King James Version', NULL, 'eng', 1611, 2, NULL, 'MAS', 'TRG', NULL, NULL, NULL)
+	, ('KJV', 'King James Version', NULL, 'eng', 1611, 2, 12.0, 'MAS', 'TRG', NULL, NULL, NULL)
 	, ('BGS', 'Brenton Greek Septuagint', NULL, 'grc', 1851, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+	, ('YLT', 'Young’s Literal Translation', NULL, 'eng', 1862, 1, NULL, NULL, NULL, NULL, NULL, NULL)
 	, ('ERV', 'Revised Version', NULL, 'eng', 1885, 1, NULL, NULL, NULL, 'https://ebible.org/find/show.php?id=eng-rv', NULL, NULL)
 	, ('NRSV', 'New Revised Standard Version', NULL, 'eng', 1889, 7, 11.00, NULL, NULL, 'https://friendshippress.org/nrsv-updated-edition/', NULL, 'https://friendshippress.org/bible-licensing/licensing-and-permissions-guidelines/')
 	, ('NA', 'Novum Testamentum Graece', '(Nestle-Aland GNT)', 'grc', 1898, 11, NULL, NULL, 'CT', 'https://www.academic-bible.com/en/scholarly-bible-editions/novum-testamentum-graece-nestle-aland', 'https://www.bibelwissenschaft.de/en/bible/NA28/', NULL)
-	, ('ASV', 'American Standard Version', NULL, 'eng', 1901, 1, NULL, NULL, NULL, NULL, NULL, NULL)
+	, ('ASV', 'American Standard Version', NULL, 'eng', 1901, 1, NULL, NULL, NULL, NULL, 'MAS', 'CT')
 	, ('TCNT', 'Twentieth Century New Testament', NULL, 'eng', 1904, 1, NULL, NULL, NULL, NULL, NULL, NULL)
 	, ('BHK', 'Biblia Hebraica', '(Kittel)', 'hbo', 1906, 1, NULL, 'JBC', NULL, 'https://www.academic-bible.com/en/rudolf-kittels-biblia-hebraica-bhk', NULL, NULL)
 	, ('JPS', 'Jewish Publication Society of America Version', NULL, 'eng', 1917, 1, NULL, NULL, NULL, 'https://jps.org/download-the-tanakh-1917-translation/', NULL, NULL)
 	, ('RSV', 'Revised Standard Version', NULL, 'eng', 1952, 7, 12.00, NULL, NULL, 'https://friendshippress.org/our-bibles/', NULL, 'https://friendshippress.org/bible-licensing/licensing-and-permissions-guidelines/')
 	, ('AMP', 'Amplified Bible, The', NULL, 'eng', 1965, 7, 11.00, NULL, NULL, NULL, NULL, NULL)
+	, ('BBE', 'Bible in Basic English', NULL, 'eng', 1965, 1, NULL, NULL, NULL, NULL, NULL, NULL)
 	, ('UBS', 'United Bible Societies’s Greek New Testament', NULL, 'grc', 1966, 11, NULL, NULL, 'CT', NULL, NULL, NULL)
 	, ('NAB', 'New American Bible', NULL, 'eng', 1970, 7, 9.00, 'MAS', 'Ax', 'https://bible.usccb.org/bible', 'https://bible.usccb.org/bible', 'https://www.usccb.org/offices/new-american-bible/permissions')
 	, ('NASB', 'New American Standard Bible', NULL, 'eng', 1971, 7, 11.00, NULL, NULL, NULL, NULL, NULL)
@@ -65,3 +67,26 @@ INSERT INTO [dbo].[Versions]([Id], [Name], [SubTitle], [LanguageId], [YearPublis
 	, ('TCENT', 'Text-Critical English New Testament, The', 'Byzantine Text Version', 'eng', 2021, 12, NULL, NULL, 'Byz', NULL, NULL, NULL)
 	, ('MSB', 'Majority Standard Bible', NULL, 'eng', 2022, 1, NULL, NULL, NULL, 'https://majoritybible.com/', 'https://biblehub.com/msb/matthew/1.htm', 'https://berean.bible/licensing.htm')
 
+----------------------------------------------------------------------------
+-- Version Lineage
+----------------------------------------------------------------------------
+
+UPDATE Versions SET ParentId = 'ERV' WHERE Id = 'ASV'
+UPDATE Versions SET ParentId = 'ASV' WHERE Id = 'ASVBT'
+UPDATE Versions SET ParentId = 'ASV' WHERE Id = 'NASB'
+UPDATE Versions SET ParentId = 'ASV' WHERE Id = 'WEB'
+UPDATE Versions SET ParentId = 'BIB' WHERE Id = 'BSB'
+UPDATE Versions SET ParentId = 'KJV' WHERE Id = 'ERV'
+UPDATE Versions SET ParentId = 'KJV' WHERE Id = 'NKJV'
+UPDATE Versions SET ParentId = 'ASV' WHERE Id = 'NASB'
+UPDATE Versions SET ParentId = 'ASV' WHERE Id = 'AMP'
+UPDATE Versions SET ParentId = 'RSV' WHERE Id = 'ESV'
+UPDATE Versions SET ParentId = 'NASB' WHERE Id = 'LSB'
+UPDATE Versions SET ParentId = 'HCSB' WHERE Id = 'CSB'
+UPDATE Versions SET ParentId = 'RSV' WHERE Id = 'NRSV'
+UPDATE Versions SET ParentId = 'ASV' WHERE Id = 'RSV'
+UPDATE Versions SET ParentId = 'ICB' WHERE Id = 'NCV'
+UPDATE Versions SET ParentId = 'ERVE' WHERE Id = 'ICB'
+UPDATE Versions SET ParentId = 'EVD' WHERE Id = 'ERVE'
+UPDATE Versions SET ParentId = 'RVA' WHERE Id = 'RV'
+UPDATE Versions SET ParentId = 'NIV' WHERE Id = 'TNIV'
