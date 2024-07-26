@@ -2,21 +2,23 @@
 * Bible Database: SQL Server
 * bible-database-04-xrefs.sql
 *
-* Version: 2024.7.11
+* Version: 2024.7.26
 * 
-* License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
+* Script License: CC BY 4.0 - https://creativecommons.org/licenses/by/4.0/
 * 
 * Original Sources: 
-* https://github.com/scrollmapper/bible_databases/
-* https://www.openbible.info/labs/cross-references/
+*  - https://github.com/scrollmapper/bible_databases/
+*  - https://www.openbible.info/labs/cross-references/
 *
 ***************************************************************************/
+
+IF EXISTS (SELECT * FROM SchemaUpdates WHERE [Code] = '2024.7.26.4.2') 
+	THROW 90000, 'Schema Update has already been run', 1;
 
 
 ----------------------------------------------------------------------------
 -- Cross References
 ----------------------------------------------------------------------------
-
 INSERT INTO [ReferenceVerses]([VerseId], [ReferenceId], [EndReferenceId], [Ranking])
 	 VALUES (101001001, 343001001, 343001003, 42)
 	, (101001001, 351001016, 351001017, 30)
@@ -88108,3 +88110,9 @@ INSERT INTO [ReferenceVerses]([VerseId], [ReferenceId], [EndReferenceId], [Ranki
 	, (366022019, 366007009, 366007017, 2)
 	, (366022020, 361003012, 361003014, 2)
 	, (366022021, 349006023, 349006024, 1)
+
+
+----------------------------------------------------------------------------
+-- Schema 
+----------------------------------------------------------------------------
+INSERT INTO SchemaUpdates ([Code]) VALUES ('2024.7.26.4.2')
